@@ -1,4 +1,4 @@
-package com.xoab.ImageObjectDetection;
+package com.xoab.imageObjectDetection;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
