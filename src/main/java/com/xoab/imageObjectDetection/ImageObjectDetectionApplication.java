@@ -1,4 +1,4 @@
-package com.xoab.ImageObjectDetection;
+package com.xoab.imageObjectDetection;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
