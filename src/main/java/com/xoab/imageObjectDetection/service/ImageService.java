@@ -2,15 +2,16 @@ package com.xoab.imageObjectDetection.service;
 
 import com.xoab.imageObjectDetection.dao.ImageDAO;
 import com.xoab.imageObjectDetection.dto.DetectedObjectsDTO;
-import com.xoab.imageObjectDetection.dto.responseDTOs.AllImagesDataDTO;
-import com.xoab.imageObjectDetection.dto.responseDTOs.MatchingImagesDataDTO;
-import com.xoab.imageObjectDetection.dto.responseDTOs.SingleImageDataDTO;
 import com.xoab.imageObjectDetection.dto.ImageRequestDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageDataDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageResponseDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImagesResponseDTO;
 import com.xoab.imageObjectDetection.helper.ImageObjectDetector;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,7 +34,7 @@ public class ImageService {
     @Autowired
     ImageDAO imageDAO;
 
-    public SingleImageDataDTO addImage(ImageRequestDTO imageRequestDTO, String localFilePath){
+    public ImageDataDTO addImage(ImageRequestDTO imageRequestDTO, String localFilePath){
         DetectedObjectsDTO[] detectedObjects = null;
 
         if (imageRequestDTO.isEnableObjectDetection()){
@@ -53,41 +56,65 @@ public class ImageService {
         String objects = detectedObjects == null ? "" :
                 String.join(",", Arrays.stream(detectedObjects).map(DetectedObjectsDTO::getName).toArray(String[]::new));
 
-        return new SingleImageDataDTO(imageRequestDTO, getImageData(localFilePath), localFilePath, imageId, objects);
+        return new ImageDataDTO(imageRequestDTO, getImageData(localFilePath), localFilePath, imageId, objects);
     }
 
     public ResponseEntity getImageMetadata(int imageId){
-        SingleImageDataDTO singleImageDataDTO = imageDAO.getImageMetadata(imageId);
+        ImageDataDTO imageDataDTO = imageDAO.getImageMetadata(imageId);
 
         try {
-            singleImageDataDTO.setImageData(FileUtils.readFileToByteArray(new File(singleImageDataDTO.getUrl())));
+            imageDataDTO.setImageData(FileUtils.readFileToByteArray(new File(imageDataDTO.getUrl())));
         } catch (Exception e){
-            log.error("Unable to get image data from file {}", singleImageDataDTO.getUrl());
+            log.error("Unable to get image data from file {}", imageDataDTO.getUrl());
         }
 
-        if (singleImageDataDTO != null){
-            return ResponseEntity.ok(singleImageDataDTO);
+        if (imageDataDTO != null){
+            return ResponseEntity.ok(new ImageResponseDTO(imageDataDTO));
         } else {
             return ResponseEntity.internalServerError().build();
         }
     }
 
     public ResponseEntity getAllImageMetadata(){
-        List<AllImagesDataDTO> singleImageDataDTOList = imageDAO.getAllImageData();
+        List<ImageDataDTO> allImageData = imageDAO.getAllImageData();
 
-        if (singleImageDataDTOList != null){
-            return ResponseEntity.ok(singleImageDataDTOList);
+        if (allImageData != null){
+            return ResponseEntity.ok(new ImagesResponseDTO(allImageData));
         } else {
             return ResponseEntity.internalServerError().build();
         }
     }
 
     public ResponseEntity getMatchingImages(String[] objects){
-        List<MatchingImagesDataDTO> matchingImages = imageDAO.getMatchingImages(objects);
+        List<ImageDataDTO> matchingImages = imageDAO.getMatchingImages(objects);
 
         if (matchingImages != null){
-            return ResponseEntity.ok(matchingImages);
+            for (ImageDataDTO imageDataDTO : matchingImages) {
+                try {
+                    imageDataDTO.setImageData(FileUtils.readFileToByteArray(new File(imageDataDTO.getUrl())));
+                } catch (Exception e) {
+                    log.error("Unable to get image data from file {}", imageDataDTO.getUrl());
+                }
+            }
+
+            return ResponseEntity.ok(new ImagesResponseDTO(matchingImages));
         } else {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    public ResponseEntity getImage(String url){
+        try {
+            if (url != null){
+                String base64decoded = new String(Base64.getDecoder().decode(url));
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(FileUtils.readFileToByteArray(new File(base64decoded)));
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        } catch (Exception e){
+            log.error("Unable to provide image for url {}", e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -128,16 +155,12 @@ public class ImageService {
      * @return
      */
     String createLabelWithTags(DetectedObjectsDTO[] detectedObjects){
-        // Assume no single tag will be greater than 128 chars?
-        StringBuilder sb = new StringBuilder(detectedObjects[0].getName());
-        int tagNum = 1;
-        while(sb.length() + detectedObjects[tagNum].getName().length() < 127){
-            sb.append("-");
-            sb.append(detectedObjects[tagNum].getName());
-            tagNum++;
+        String objects = Arrays.stream(detectedObjects).map(obj -> obj.getName()).collect(Collectors.joining(","));
+        if (objects.length() > 127){
+            return objects.substring(0, 125) + "...";
+        } else {
+            return objects;
         }
-
-        return sb.toString();
     }
 
     byte[] getImageData(String path){

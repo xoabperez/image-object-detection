@@ -1,9 +1,8 @@
 package com.xoab.imageObjectDetection.dao;
 
-import com.xoab.imageObjectDetection.dto.*;
-import com.xoab.imageObjectDetection.dto.responseDTOs.AllImagesDataDTO;
-import com.xoab.imageObjectDetection.dto.responseDTOs.MatchingImagesDataDTO;
-import com.xoab.imageObjectDetection.dto.responseDTOs.SingleImageDataDTO;
+import com.xoab.imageObjectDetection.dto.DetectedObjectsDTO;
+import com.xoab.imageObjectDetection.dto.ImageRequestDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageDataDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -20,9 +19,7 @@ public class ImageDAO {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    BeanPropertyRowMapper<SingleImageDataDTO> singleImageDataDTOBeanPropertyRowMapper = new BeanPropertyRowMapper<>(SingleImageDataDTO.class);
-    BeanPropertyRowMapper<MatchingImagesDataDTO> matchingImagesDataDTOBeanPropertyRowMapper = new BeanPropertyRowMapper<>(MatchingImagesDataDTO.class);
-    BeanPropertyRowMapper<AllImagesDataDTO> allImagesDataDTOBeanPropertyRowMapper = new BeanPropertyRowMapper<>(AllImagesDataDTO.class);
+    BeanPropertyRowMapper<ImageDataDTO> imageDataDTOBeanPropertyRowMapper = new BeanPropertyRowMapper<>(ImageDataDTO.class);
 
     public Integer addImage(ImageRequestDTO imageRequestDTO, String localFilePath, DetectedObjectsDTO[] detectedObjects){
         // Insert the image and make sure a valid ID is returned before inserting/retrieving object IDs and then
@@ -88,36 +85,36 @@ public class ImageDAO {
         }
     }
 
-    public SingleImageDataDTO getImageMetadata(int imageId){
+    public ImageDataDTO getImageMetadata(int imageId){
         try {
-            List<SingleImageDataDTO> singleImageDataDTOS = jdbcTemplate.query(
+            List<ImageDataDTO> imageDataDTOS = jdbcTemplate.query(
                     "SELECT id, url, label, object_detection_enabled, objects FROM images WHERE id = ?",
-                    singleImageDataDTOBeanPropertyRowMapper, imageId);
+                    imageDataDTOBeanPropertyRowMapper, imageId);
 
-            return singleImageDataDTOS.get(0);
+            return imageDataDTOS.get(0);
         } catch (Exception e) {
             log.error("Unable to insert image into table", e);
             return null;
         }
     }
 
-    public List<MatchingImagesDataDTO> getMatchingImages(String[] objects){
+    public List<ImageDataDTO> getMatchingImages(String[] objects){
         try {
             return jdbcTemplate.query(
-                    "SELECT images.id, url FROM tags JOIN objects ON tags.object_id = objects.id " +
+                    "SELECT images.id, url, label FROM tags JOIN objects ON tags.object_id = objects.id " +
                             "JOIN images ON tags.image_id = images.id WHERE objects.name = ANY(?) ORDER BY confidence DESC",
-                    matchingImagesDataDTOBeanPropertyRowMapper, (Object) objects);
+                    imageDataDTOBeanPropertyRowMapper, (Object) objects);
         } catch (Exception e) {
             log.error("Error finding matching images for objects {}", objects, e);
             return null;
         }
     }
 
-    public List<AllImagesDataDTO> getAllImageData(){
+    public List<ImageDataDTO> getAllImageData(){
         try {
             return jdbcTemplate.query(
                     "SELECT id, url, label, object_detection_enabled, objects FROM images",
-                    allImagesDataDTOBeanPropertyRowMapper);
+                    imageDataDTOBeanPropertyRowMapper);
         } catch (Exception e) {
             log.error("Unable to insert image into table", e);
             return null;

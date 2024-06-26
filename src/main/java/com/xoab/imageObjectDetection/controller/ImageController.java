@@ -1,6 +1,7 @@
 package com.xoab.imageObjectDetection.controller;
 
-import com.xoab.imageObjectDetection.dto.responseDTOs.SingleImageDataDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageDataDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageResponseDTO;
 import com.xoab.imageObjectDetection.service.ImageService;
 import com.xoab.imageObjectDetection.dto.ImageRequestDTO;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/images")
 @Slf4j
+@CrossOrigin(origins = "*", methods = {RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE}, allowedHeaders = "*")
 public class ImageController {
 
     @Autowired
@@ -27,12 +29,15 @@ public class ImageController {
      * @return
      */
     @GetMapping
-    public ResponseEntity getImagesWithObjects(@RequestParam(required = false) String objects){
-        if (objects == null){
-            return imageService.getAllImageMetadata();
-        } else {
+    public ResponseEntity getImages(@RequestParam(required = false) String objects,
+                                    @RequestParam(required = false) String url){
+        if (objects != null) {
             String[] separateObjects = objects.split(",");
             return imageService.getMatchingImages(separateObjects);
+        } else if (url != null) {
+            return imageService.getImage(url);
+        } else {
+            return imageService.getAllImageMetadata();
         }
     }
 
@@ -62,10 +67,10 @@ public class ImageController {
         try {
             String localFilePath = imageService.downloadFile(imageRequestDTO);
 
-            SingleImageDataDTO singleImageDataDTO = imageService.addImage(imageRequestDTO, localFilePath);
+            ImageDataDTO imageDataDTO = imageService.addImage(imageRequestDTO, localFilePath);
 
-            if (singleImageDataDTO != null) {
-                return ResponseEntity.ok(singleImageDataDTO);
+            if (imageDataDTO != null) {
+                return ResponseEntity.ok(new ImageResponseDTO(imageDataDTO));
             } else {
                 return ResponseEntity.internalServerError().build();
             }

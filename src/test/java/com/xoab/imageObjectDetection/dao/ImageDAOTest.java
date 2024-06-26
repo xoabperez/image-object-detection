@@ -1,7 +1,8 @@
 package com.xoab.imageObjectDetection.dao;
 
 import com.xoab.imageObjectDetection.dto.DetectedObjectsDTO;
-import com.xoab.imageObjectDetection.dto.responseDTOs.SingleImageDataDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageDataDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageDataDTO;
 import com.xoab.imageObjectDetection.dto.ImageRequestDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,29 +113,29 @@ class ImageDAOTest {
         Integer id = imageDAO.addImage(imageRequestDTO, fakePath, detectedObjectsDTOS);
         assertNotNull(id);
 
-        SingleImageDataDTO singleImageDataDTO = imageDAO.getImageMetadata(id);
-        assertNotNull(singleImageDataDTO);
-        assertEquals(id, singleImageDataDTO.getId());
-        assertEquals("test", singleImageDataDTO.getLabel());
-        assertNotNull(singleImageDataDTO.getUrl());
-        assertTrue(singleImageDataDTO.isObjectDetectionEnabled());
-        assertEquals("{animal,dog}", singleImageDataDTO.getObjects());
+        ImageDataDTO imageDataDTO = imageDAO.getImageMetadata(id);
+        assertNotNull(imageDataDTO);
+        assertEquals(id, imageDataDTO.getId());
+        assertEquals("test", imageDataDTO.getLabel());
+        assertNotNull(imageDataDTO.getUrl());
+        assertTrue(imageDataDTO.isObjectDetectionEnabled());
+        assertEquals("{animal,dog}", imageDataDTO.getObjects());
     }
 
     @Test
     void getAllImageData() {
-        List<SingleImageDataDTO> singleImageDataDTOS = imageDAO.getAllImageData();
-        assertNotNull(singleImageDataDTOS);
-        assertFalse(singleImageDataDTOS.isEmpty());
-        assertNotNull(singleImageDataDTOS.get(0));
-        assertNotNull(singleImageDataDTOS.get(0).getUrl());
+        List<ImageDataDTO> imageDataDTOS = imageDAO.getAllImageData();
+        assertNotNull(imageDataDTOS);
+        assertFalse(imageDataDTOS.isEmpty());
+        assertNotNull(imageDataDTOS.get(0));
+        assertNotNull(imageDataDTOS.get(0).getUrl());
     }
 
     @Test
     void getMatchingImages() {
-        List<SingleImageDataDTO> singleImageDataDTOS = imageDAO.getMatchingImages(new String[]{"animal", "pen"});
-        assertNotNull(singleImageDataDTOS);
-        assertFalse(singleImageDataDTOS.isEmpty());
+        List<ImageDataDTO> imageDataDTOS = imageDAO.getMatchingImages(new String[]{"animal", "pen"});
+        assertNotNull(imageDataDTOS);
+        assertFalse(imageDataDTOS.isEmpty());
     }
 
 }
