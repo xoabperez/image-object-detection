@@ -26,7 +26,7 @@ java -jar ImageObjectDetection-0.0.1-SNAPSHOT.jar
 ```
 
 ## Endpoints
-To call the APIs, the swagger page can be used and should be available at http://localhost:8080/swagger-ui/index.html. Additionally, `src/main/resources/test-requests.http` shows example calls that can be made (and used in IntelliJ IDEA). The following endpoints are available:
+To call the APIs, the swagger page can be used and should be available at http://localhost:8080/swagger-ui/index.html. Additionally, `src/main/resources/test-requests.http` shows example calls that can be made (and used in IntelliJ IDEA). The following endpoints are available at http://localhost:8080 :
 
 ### Upload an image
 ```
@@ -35,22 +35,24 @@ POST /images
 Uploads an image to the server.
 
 #### Request Body
-|Key | Type | Value |
-|-|-|-|
-|**imageData**|byte array | an image file (optional; if empty, must have imageUrl)|
-|**imageUrl**|string |URL of publicly available image (optional; if empty, must have imageData)|
-|**imageLabel**| string| (optional) label for the image|
-|**enableObjectDetection**| boolean|(optional) of whether to detect objects|
+| Key                       | Type       | Value                                                                     |
+|---------------------------|------------|---------------------------------------------------------------------------|
+| **imageData**             | byte array | an image file (optional; if empty, must have imageUrl)                    |
+| **imageUrl**              | string     | URL of publicly available image (optional; if empty, must have imageData) |
+| **imageLabel**            | string     | (optional) label for the image                                            |
+| **enableObjectDetection** | boolean    | (optional) whether to detect objects                                      |
 
 #### Response Body
-|Key | Type | Value |
-|-|-|-|
-|**id**|integer| value of the image's id in the database|
-|**label**| string|(optional| a label for the image (produced by server if not provided in request)|
-|**imageData**|byte array | the image file data|
-|**url**|string| URL of the file used by the server|
-|**objectDetectionEnabled**| boolean| whether object detection was enabled|
-|**objects**| string|(optional)list of objects identified in the image if object detection was enabled|
+A json object with a single key named "image" with the following:
+
+| Key                        | Type       | Value                                                                              |
+|----------------------------|------------|------------------------------------------------------------------------------------|
+| **id**                     | integer    | value of the image's id in the database                                            |
+| **label**                  | string     | a label for the image (produced by server if not provided in request)              |
+| **imageData**              | byte array | the image file data                                                                |
+| **url**                    | string     | URL of the file used by the server                                                 |
+| **objectDetectionEnabled** | boolean    | whether object detection was enabled                                               |
+| **objects**                | string     | (optional) list of objects identified in the image if object detection was enabled |
 
 ### Get an image
 ```
@@ -58,14 +60,16 @@ GET /images/{imageId}
 ```
 Retrieves the data associated with the image of id `imageId` if it exists in the database.
 #### Response Body
-|Key | Type | Value |
-|-|-|-|
-|**id**|integer| value of the image's id in the database|
-|**label**| string|(optional| a label for the image (produced by server if not provided in request)|
-|**imageData**|byte array | the image file data|
-|**url**|string| URL of the file used by the server|
-|**objectDetectionEnabled**| boolean| whether object detection was enabled|
-|**objects**| string|(optional)list of objects identified in the image if object detection was enabled|
+A json object with a single key named "image" with the following:
+
+| Key                        | Type       | Value                                                                              |
+|----------------------------|------------|------------------------------------------------------------------------------------|
+| **id**                     | integer    | value of the image's id in the database                                            |
+| **label**                  | string     | a label for the image (produced by server if not provided in request)              |
+| **imageData**              | byte array | the image file data                                                                |
+| **url**                    | string     | URL of the file used by the server                                                 |
+| **objectDetectionEnabled** | boolean    | whether object detection was enabled                                               |
+| **objects**                | string     | (optional) list of objects identified in the image if object detection was enabled |
 
 ### Get all images
 ```
@@ -74,14 +78,15 @@ GET /images
 Retrieves the metadata of all images stored in the database.
 
 #### Response Body
-The response is a list, with each item containing the following valid attributes:
-|Key | Type | Value |
-|-|-|-|
-|**id**|integer| value of the image's id in the database|
-|**label**| string|(optional| a label for the image (produced by server if not provided in request)|
-|**url**|string| URL of the file used by the server|
-|**objectDetectionEnabled**| boolean| whether object detection was enabled|
-|**objects**| string|(optional)list of objects identified in the image if object detection was enabled|
+The response is a list names "images", with each item containing the following valid attributes:
+
+| Key                        | Type    | Value                                                                              |
+|----------------------------|---------|------------------------------------------------------------------------------------|
+| **id**                     | integer | value of the image's id in the database                                            |
+| **label**                  | string  | a label for the image (produced by server if not provided in request)              |
+| **url**                    | string  | URL of the file used by the server                                                 |
+| **objectDetectionEnabled** | boolean | whether object detection was enabled                                               |
+| **objects**                | string  | (optional) list of objects identified in the image if object detection was enabled |
 
 
 ### Get images with objects
@@ -91,11 +96,13 @@ GET /images?objects={cat,dog}
 Retrieves the metadata of all images with the requested objects.
 
 #### Response Body
-The response is a list, with each item containing the following valid attributes:
-|Key | Type | Value |
-|-|-|-|
-|**id**|integer| value of the image's id in the database|
-|**url**|string| URL of the file used by the server|
+The response is a list names "images", with each item containing the following valid attributes:
+
+| Key     | Type    | Value                                   |
+|---------|---------|-----------------------------------------|
+| **id**  | integer | value of the image's id in the database |
+| **label**                  | string     | a label for the image (produced by server if not provided in request)              |
+| **imageData**              | byte array | the image file data     
 
 ## Tests
 There are some tests under `src/test/java` that will be run by maven on install; these should help confirm database connections are working as well as the endpoints. Of course, more thorough testing should be added.
