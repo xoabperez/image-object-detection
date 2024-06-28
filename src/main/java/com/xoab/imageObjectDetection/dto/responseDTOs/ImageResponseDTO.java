@@ -6,6 +6,8 @@ import lombok.Data;
 public class ImageResponseDTO {
     private ImageDataDTO image;
 
+    public ImageResponseDTO() {};
+
     public ImageResponseDTO(ImageDataDTO image) {
         this.image = image;
     }

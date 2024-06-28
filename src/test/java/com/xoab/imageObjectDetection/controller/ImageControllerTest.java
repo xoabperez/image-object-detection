@@ -1,8 +1,8 @@
 package com.xoab.imageObjectDetection.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.xoab.imageObjectDetection.dto.responseDTOs.ImageDataDTO;
 import com.xoab.imageObjectDetection.dto.ImageRequestDTO;
+import com.xoab.imageObjectDetection.dto.responseDTOs.ImageResponseDTO;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +44,11 @@ class ImageControllerTest {
 
         String responseBody  = mvcResult.getResponse().getContentAsString();
 
-        ImageDataDTO imageDataDTO = objectMapper.readValue(responseBody, ImageDataDTO.class);
+        ImageResponseDTO imageDataDTO = objectMapper.readValue(responseBody, ImageResponseDTO.class);
 
         assertNotNull(imageDataDTO);
-        assertEquals(imageRequestDTO.getImageLabel(), imageDataDTO.getLabel());
-        assertTrue(imageDataDTO.getObjects().contains("animal"));
+        assertEquals(imageRequestDTO.getImageLabel(), imageDataDTO.getImage().getLabel());
+        assertTrue(imageDataDTO.getImage().getObjects().contains("animal"));
     }
 
     @Test
@@ -68,11 +68,11 @@ class ImageControllerTest {
 
         String responseBody  = mvcResult.getResponse().getContentAsString();
 
-        ImageDataDTO imageDataDTO = objectMapper.readValue(responseBody, ImageDataDTO.class);
+        ImageResponseDTO imageDataDTO = objectMapper.readValue(responseBody, ImageResponseDTO.class);
 
         assertNotNull(imageDataDTO);
-        assertEquals(imageRequestDTO.getImageLabel(), imageDataDTO.getLabel());
-        assertTrue(imageDataDTO.getObjects().contains("animal"));
+        assertEquals(imageRequestDTO.getImageLabel(), imageDataDTO.getImage().getLabel());
+        assertTrue(imageDataDTO.getImage().getObjects().contains("animal"));
     }
 
     @Test
